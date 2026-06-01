@@ -1,0 +1,412 @@
+<!-- Google Fonts & FontAwesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --brand: #e85d04;
+        --brand-dark: #c44900;
+        --brand-glow: rgba(232, 93, 4, 0.35);
+        --brand-dim: rgba(232, 93, 4, 0.1);
+        --brand-border: rgba(232, 93, 4, 0.3);
+        --whatsapp: #25D366;
+        --whatsapp-dim: rgba(37, 211, 102, 0.1);
+        --whatsapp-border: rgba(37, 211, 102, 0.3);
+        --bg-deep: #09090b;
+        --bg-surface: #131316;
+        --bg-card: rgba(20, 20, 24, 0.85);
+        --glass-border: rgba(255, 255, 255, 0.06);
+        --text-main: #f4f4f5;
+        --text-sec: #a1a1aa;
+        --text-muted: #52525b;
+        --divider: rgba(255, 255, 255, 0.04);
+    }
+
+    .resto-bot * { box-sizing: border-box; margin: 0; padding: 0; }
+    .resto-bot { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+    .ambient {
+        position: fixed; border-radius: 50%; filter: blur(100px);
+        pointer-events: none; z-index: 0; opacity: 0.3;
+    }
+    .amb-1 { width: 350px; height: 350px; background: var(--brand); bottom: -80px; right: -80px; animation: amb-f 10s ease-in-out infinite; }
+    .amb-2 { width: 250px; height: 250px; background: #7c2d12; top: -60px; left: -60px; animation: amb-f 12s ease-in-out infinite reverse; }
+    @keyframes amb-f { 0%, 100% { transform: translate(0,0) scale(1); } 50% { transform: translate(25px,-25px) scale(1.05); } }
+
+    .launcher-wrap { position: fixed; bottom: 28px; right: 28px; z-index: 10000; }
+    .launcher-btn {
+        width: 62px; height: 62px;
+        background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+        border: none; border-radius: 50%; color: #fff; font-size: 24px;
+        display: flex; align-items: center; justify-content: center; cursor: pointer;
+        box-shadow: 0 8px 32px var(--brand-glow);
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); position: relative;
+    }
+    .launcher-btn:hover { transform: scale(1.1) rotate(8deg); box-shadow: 0 10px 40px var(--brand-glow); }
+    .launcher-btn.open { background: var(--bg-surface); box-shadow: 0 4px 20px rgba(0,0,0,0.5); transform: scale(1) rotate(0deg); }
+    .pulse-ring { position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--brand); animation: pulse-o 2.5s infinite; }
+    .launcher-btn.open .pulse-ring { display: none; }
+    @keyframes pulse-o { 0% { transform: scale(1); opacity: 0.6; } 100% { transform: scale(1.7); opacity: 0; } }
+    .launch-badge { position: absolute; top: -5px; right: -5px; width: 20px; height: 20px; background: #ef4444; border-radius: 50%; color: #fff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 3px solid var(--bg-deep); transition: all 0.3s; }
+    .launch-badge.gone { transform: scale(0); }
+
+    .chat-window {
+        position: fixed; bottom: 105px; right: 28px; width: 390px; height: 620px;
+        max-height: calc(100vh - 130px);
+        background: var(--bg-card); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
+        border: 1px solid var(--glass-border); border-radius: 28px;
+        display: flex; flex-direction: column; overflow: hidden; z-index: 9999;
+        opacity: 0; visibility: hidden; transform: translateY(30px) scale(0.92);
+        transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04), inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+    .chat-window.visible { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
+
+    .chat-header { padding: 18px 20px; background: rgba(0,0,0,0.35); border-bottom: 1px solid var(--glass-border); display: flex; align-items: center; gap: 14px; position: relative; }
+    .chat-header::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--brand), transparent); opacity: 0.5; }
+    .resto-logo { width: 46px; height: 46px; background: linear-gradient(135deg, var(--brand), var(--brand-dark)); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 20px; box-shadow: 0 4px 16px var(--brand-glow); flex-shrink: 0; position: relative; }
+    .on-dot { position: absolute; bottom: -2px; right: -2px; width: 13px; height: 13px; background: #22c55e; border-radius: 50%; border: 3px solid var(--bg-deep); box-shadow: 0 0 8px #22c55e; }
+    .resto-info { flex: 1; }
+    .resto-info h4 { color: var(--text-main); font-size: 15px; font-weight: 700; letter-spacing: -0.3px; }
+    .resto-info p { color: #22c55e; font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+    .resto-info p i { font-size: 6px; }
+    .reset-btn { width: 32px; height: 32px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 10px; color: var(--text-sec); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 12px; transition: all 0.3s; }
+    .reset-btn:hover { background: rgba(255,255,255,0.1); color: #fff; transform: rotate(180deg); }
+
+    .chat-body { flex: 1; overflow-y: auto; padding: 20px 18px; display: flex; flex-direction: column; gap: 6px; scroll-behavior: smooth; }
+    .chat-body::-webkit-scrollbar { width: 3px; }
+    .chat-body::-webkit-scrollbar-track { background: transparent; }
+    .chat-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 10px; }
+
+    .day-sep { display: flex; align-items: center; gap: 14px; margin: 10px 0; }
+    .day-sep::before, .day-sep::after { content: ''; flex: 1; height: 1px; background: var(--glass-border); }
+    .day-sep span { color: var(--text-muted); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; }
+
+    .m-row { display: flex; flex-direction: column; max-width: 90%; animation: m-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    .m-row.bot { align-self: flex-start; }
+    .m-row.user { align-self: flex-end; }
+    @keyframes m-in { from { opacity: 0; transform: translateY(10px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+    .m-bubble { padding: 14px 18px; font-size: 13px; line-height: 1.65; border-radius: 20px; word-wrap: break-word; }
+    .m-bubble strong { font-weight: 700; color: #fff; }
+    .m-bubble ul { margin: 8px 0; padding-left: 18px; }
+    .m-bubble li { margin: 5px 0; color: var(--text-sec); font-size: 12.5px; }
+    .m-bubble li strong { color: var(--text-main); font-weight: 600; }
+    .m-bubble .highlight { color: var(--brand); font-weight: 600; }
+
+    .bot .m-bubble { background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); color: var(--text-sec); border-bottom-left-radius: 6px; }
+    .user .m-bubble { background: linear-gradient(135deg, var(--brand), var(--brand-dark)); color: #fff; font-weight: 600; border-bottom-right-radius: 6px; box-shadow: 0 4px 16px var(--brand-glow); }
+    .m-time { font-size: 10px; color: var(--text-muted); margin-top: 4px; padding: 0 6px; }
+    .user .m-time { text-align: right; }
+
+    .typing-wrap { display: none; align-self: flex-start; padding: 14px 20px; background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); border-radius: 20px; border-bottom-left-radius: 6px; gap: 5px; }
+    .typing-wrap.on { display: flex; }
+    .typing-wrap span { width: 7px; height: 7px; background: var(--brand); border-radius: 50%; animation: t-b 1.4s infinite ease-in-out both; box-shadow: 0 0 6px var(--brand-glow); }
+    .typing-wrap span:nth-child(1) { animation-delay: -0.32s; }
+    .typing-wrap span:nth-child(2) { animation-delay: -0.16s; }
+    @keyframes t-b { 0%, 80%, 100% { transform: scale(0.4); opacity: 0.3; } 40% { transform: scale(1); opacity: 1; } }
+
+    .qr-wrap { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
+    .qr-btn { background: var(--brand-dim); border: 1px solid var(--brand-border); color: #fb923c; padding: 7px 14px; border-radius: 12px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.25s; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .qr-btn:hover { background: var(--brand); color: #fff; box-shadow: 0 4px 16px var(--brand-glow); transform: translateY(-2px); }
+
+    .wa-cta { display: inline-flex; align-items: center; gap: 6px; background: var(--whatsapp-dim); border: 1px solid var(--whatsapp-border); color: var(--whatsapp); padding: 6px 12px; border-radius: 10px; text-decoration: none; font-size: 11.5px; font-weight: 600; margin-top: 10px; transition: all 0.25s; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .wa-cta:hover { background: var(--whatsapp); color: #fff; box-shadow: 0 4px 14px rgba(37,211,102,0.3); transform: translateY(-1px); }
+    .wa-cta i { font-size: 13px; }
+
+    .map-cta { display: inline-flex; align-items: center; gap: 6px; background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); color: #60a5fa; padding: 6px 12px; border-radius: 10px; text-decoration: none; font-size: 11.5px; font-weight: 600; margin-top: 6px; transition: all 0.25s; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .map-cta:hover { background: #3b82f6; color: #fff; box-shadow: 0 4px 14px rgba(59,130,246,0.3); transform: translateY(-1px); }
+
+    /* Review Stars */
+    .review-card { background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; padding: 10px 14px; margin-top: 8px; }
+    .review-card .r-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+    .review-card .r-name { color: var(--text-main); font-size: 12px; font-weight: 700; }
+    .review-card .r-stars { color: #facc15; font-size: 10px; letter-spacing: 1px; }
+    .review-card .r-text { color: var(--text-sec); font-size: 11.5px; font-style: italic; line-height: 1.5; }
+
+    .bottom-nav { padding: 14px 18px 18px; background: rgba(0,0,0,0.3); border-top: 1px solid var(--divider); display: flex; flex-direction: column; gap: 10px; }
+    .nav-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    .nav-item { background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; padding: 10px 4px; display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; transition: all 0.25s; text-align: center; }
+    .nav-item:hover { border-color: var(--brand-border); background: var(--brand-dim); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(232,93,4,0.15); }
+    .nav-item i { font-size: 16px; color: var(--brand); }
+    .nav-item span { font-size: 9.5px; font-weight: 600; color: var(--text-sec); line-height: 1.2; }
+
+    .wa-main-btn { display: flex; align-items: center; justify-content: center; gap: 8px; background: var(--whatsapp); border: none; border-radius: 14px; color: #fff; padding: 11px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.25s; font-family: 'Plus Jakarta Sans', sans-serif; box-shadow: 0 4px 16px rgba(37,211,102,0.25); text-decoration: none; }
+    .wa-main-btn:hover { box-shadow: 0 6px 24px rgba(37,211,102,0.4); transform: translateY(-2px); }
+    .wa-main-btn i { font-size: 16px; }
+
+    @media (max-width: 480px) {
+        .chat-window { width: calc(100vw - 16px); height: calc(100vh - 110px); right: 8px; bottom: 88px; border-radius: 24px; }
+        .ambient { display: none; }
+        .nav-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+</style>
+
+<div class="resto-bot">
+    <div class="ambient amb-1"></div>
+    <div class="ambient amb-2"></div>
+
+    <div class="chat-window" id="chatWin">
+        <div class="chat-header">
+            <div class="resto-logo">
+                <i class="fa-solid fa-fire-flame-curved"></i>
+                <div class="on-dot"></div>
+            </div>
+            <div class="resto-info">
+                <h4>CHAT SUPPORT</h4>
+                <p><i class="fa-solid fa-circle"></i> Open Now — DATA AXE</p>
+            </div>
+            <button class="reset-btn" onclick="resetChat()" title="Restart"><i class="fa-solid fa-arrow-rotate-right"></i></button>
+        </div>
+
+        <div class="chat-body" id="chatBody">
+            <div class="day-sep"><span>Today</span></div>
+        </div>
+
+        <div class="typing-wrap" id="typingEl"><span></span><span></span><span></span></div>
+
+        <div class="bottom-nav" id="bottomNav">
+            <div class="nav-grid" id="navGrid"></div>
+            <a href="#" id="waMainBtn" class="wa-main-btn">
+                <i class="fa-brands fa-whatsapp"></i> Order on WhatsApp
+            </a>
+        </div>
+    </div>
+
+    <div class="launcher-wrap">
+        <button class="launcher-btn" id="launchBtn">
+            <div class="pulse-ring"></div>
+            <i class="fa-solid fa-fire-flame-curved" id="launchIco"></i>
+        </button>
+        <div class="launch-badge" id="launchBadge">1</div>
+    </div>
+</div>
+
+<script>
+    // ─── DOM ───
+    const chatWin = document.getElementById('chatWin');
+    const chatBody = document.getElementById('chatBody');
+    const typingEl = document.getElementById('typingEl');
+    const navGrid = document.getElementById('navGrid');
+    const launchBtn = document.getElementById('launchBtn');
+    const launchIco = document.getElementById('launchIco');
+    const launchBadge = document.getElementById('launchBadge');
+    const waMainBtn = document.getElementById('waMainBtn');
+    let isOpen = false, started = false;
+
+    // ─── App Intent Links (Opens Native Apps directly) ───
+    const WA_NUMBER = '923061346466';
+    function waLink(msg) {
+        // Universal intent link that opens WhatsApp app (not web)
+        return `https://api.whatsapp.com/send?phone=${WA_NUMBER}&text=${encodeURIComponent(msg)}`;
+    }
+    const MAPS_LINK = `https://maps.google.com/maps?q=Ferozepur+Road+Lahore`;
+
+    // Set main WhatsApp button
+    waMainBtn.href = waLink("Hi, I want to order food");
+
+    // ─── Toggle ───
+    launchBtn.onclick = () => {
+        isOpen = !isOpen;
+        chatWin.classList.toggle('visible', isOpen);
+        launchBtn.classList.toggle('open', isOpen);
+        launchIco.className = isOpen ? 'fa-solid fa-xmark' : 'fa-solid fa-fire-flame-curved';
+        if (isOpen) {
+            launchBadge.classList.add('gone');
+            if (!started) { started = true; initChat(); }
+        }
+    };
+
+    // ─── Time ───
+    function now() {
+        const d = new Date(); let h = d.getHours(), m = d.getMinutes(), ap = h >= 12 ? 'PM' : 'AM';
+        h = h % 12 || 12; m = m < 10 ? '0'+m : m; return `${h}:${m} ${ap}`;
+    }
+    function scroll() { requestAnimationFrame(() => chatBody.scrollTop = chatBody.scrollHeight); }
+
+    // ─── Messages ───
+    function addUser(text) {
+        const r = document.createElement('div'); r.className = 'm-row user';
+        r.innerHTML = `<div class="m-bubble">${text}</div><div class="m-time">${now()}</div>`;
+        chatBody.appendChild(r); scroll();
+    }
+
+    function addBot(html, qReplies, delay = 850) {
+        typingEl.classList.add('on'); scroll();
+        const d = delay + Math.random() * 300;
+        setTimeout(() => {
+            typingEl.classList.remove('on');
+            const r = document.createElement('div'); r.className = 'm-row bot';
+            let content = `<div class="m-bubble">${html}`;
+            if (qReplies && qReplies.length) {
+                content += `<div class="qr-wrap">`;
+                qReplies.forEach(q => { content += `<button class="qr-btn" onclick="handleNav('${q.a}', this)">${q.l}</button>`; });
+                content += `</div>`;
+            }
+            content += `</div><div class="m-time">${now()}</div>`;
+            r.innerHTML = content; chatBody.appendChild(r); scroll();
+        }, d);
+    }
+
+    // ─── Navigation Grid ───
+    const mainNav = [
+        { icon: 'fa-solid fa-motorcycle', label: 'Delivery', a: 'delivery' },
+        { icon: 'fa-solid fa-utensils', label: 'Menu', a: 'menu' },
+        { icon: 'fa-solid fa-pepper-hot', label: 'Taste', a: 'taste' },
+        { icon: 'fa-solid fa-star', label: 'Reviews', a: 'reviews' },
+        { icon: 'fa-solid fa-clock', label: 'Timings', a: 'timings' },
+        { icon: 'fa-solid fa-wallet', label: 'Payments', a: 'payments' },
+        { icon: 'fa-solid fa-shield-halved', label: 'Complaints', a: 'complaints' },
+        { icon: 'fa-solid fa-location-dot', label: 'Location', a: 'location' }
+    ];
+
+    function renderNav(items) {
+        navGrid.innerHTML = '';
+        items.forEach(n => {
+            const div = document.createElement('div'); div.className = 'nav-item';
+            div.innerHTML = `<i class="${n.icon}"></i><span>${n.label}</span>`;
+            div.onclick = () => handleNav(n.a, div); navGrid.appendChild(div);
+        });
+    }
+    renderNav(mainNav);
+
+    // ─── Knowledge Base ───
+    const DB = {
+        delivery: {
+            text: `<strong>🛵 Delivery Details</strong><br>
+                <ul>
+                    <li><strong>Area:</strong> Ferozepur Road & nearby sectors</li>
+                    <li><strong>Charges:</strong> <span class="highlight">Rs. 60</span> (Free over Rs. 200)</li>
+                    <li><strong>Time:</strong> 35–50 minutes</li>
+                    <li><strong>Peak Hours:</strong> Slight delay possible</li>
+                </ul>`,
+            cta: `<a href="${waLink('I want to check delivery to my area')}" target="_blank" class="wa-cta"><i class="fa-brands fa-whatsapp"></i> Check my area</a>`,
+            qr: [{ l: '⟶ Back to Menu', a: 'home' }]
+        },
+        menu: {
+            text: `<strong>🍛 Popular Menu</strong><br>
+                🍛 Chicken Biryani — <strong>Rs. 350</strong><br>
+                🍛 Mutton Karahi — <strong>Rs. 1,200</strong><br>
+                🍗 BBQ Platter — <strong>Rs. 850</strong><br>
+                🍖 Chicken Tikka — <strong>Rs. 450</strong><br>
+                🥗 Fresh Raita & Salad — <strong>Rs. 100</strong><br>
+                🥤 Drinks — <strong>Rs. 80</strong><br><br>
+                <em>Full menu with deals available on WhatsApp</em>`,
+            cta: `<a href="${waLink('Send me the full menu')}" target="_blank" class="wa-cta"><i class="fa-brands fa-whatsapp"></i> Get Full Menu</a>`,
+            qr: [{ l: '💳 Payment Methods', a: 'payments' }, { l: '⭐ Reviews', a: 'reviews' }, { l: '⟶ Back to Menu', a: 'home' }]
+        },
+        taste: {
+            text: `<strong>🌶️ Taste & Quality</strong><br>
+                <ul>
+                    <li><strong>100% Fresh</strong> — Never frozen ingredients</li>
+                    <li><strong>Premium Masale</strong> — Authentic desi recipe</li>
+                    <li><strong>Clean Kitchen</strong> — Hygiene certified</li>
+                    <li><strong>Rating:</strong> ⭐ 4.8 / 5 (1,200+ reviews)</li>
+                </ul>`,
+            cta: `<a href="${waLink('Tell me about your special dishes')}" target="_blank" class="wa-cta"><i class="fa-brands fa-whatsapp"></i> Ask about specials</a>`,
+            qr: [{ l: '⭐ Read Reviews', a: 'reviews' }, { l: '🍛 View Menu', a: 'menu' }, { l: '⟶ Back to Menu', a: 'home' }]
+        },
+        reviews: {
+            text: `<strong>⭐ Customer Reviews</strong><br>
+                <strong style="font-size:22px; color:#facc15;">4.8</strong> <span style="color:#facc15;">★★★★★</span> <span style="color:var(--text-muted); font-size:11px;">1,200+ verified orders</span>
+                <div class="review-card">
+                    <div class="r-top"><span class="r-name">Ahmed K.</span><span class="r-stars">★★★★★</span></div>
+                    <div class="r-text">"Best biryani on Ferozepur Road! Always fresh, aromatic, and delivered hot."</div>
+                </div>
+                <div class="review-card">
+                    <div class="r-top"><span class="r-name">Sara M.</span><span class="r-stars">★★★★★</span></div>
+                    <div class="r-text">"Fast delivery, incredible taste. The BBQ platter is a must-try!"</div>
+                </div>
+                <div class="review-card">
+                    <div class="r-top"><span class="r-name">Usman R.</span><span class="r-stars">★★★★☆</span></div>
+                    <div class="r-text">"Clean packaging, generous portions. JazzCash payment was super easy."</div>
+                </div>`,
+            cta: `<a href="${waLink('I want to give a review')}" target="_blank" class="wa-cta"><i class="fa-brands fa-whatsapp"></i> Leave a review</a>`,
+            qr: [{ l: '🍛 View Menu', a: 'menu' }, { l: '⟶ Back to Menu', a: 'home' }]
+        },
+        timings: {
+            text: `<strong>🕒 Operating Hours</strong><br>
+                <ul>
+                    <li><strong>Days:</strong> Monday – Sunday (Open 7 days)</li>
+                    <li><strong>Hours:</strong> 12:00 PM – 2:00 AM</li>
+                    <li><strong>Peak:</strong> 7 PM – 10 PM</li>
+                </ul>`,
+            qr: [{ l: '🛵 Delivery Info', a: 'delivery' }, { l: '📍 Location', a: 'location' }, { l: '⟶ Back to Menu', a: 'home' }]
+        },
+        payments: {
+            text: `<strong>💳 Payment Methods</strong><br>
+                <ul>
+                    <li><strong>JazzCash</strong> ✅ — Instant confirmation</li>
+                    <li><strong>EasyPaisa</strong> ✅ — Instant confirmation</li>
+                </ul>
+                <em style="color:#ef4444;">Cash on Deliver.</em>`,
+            cta: `<a href="${waLink('I need payment account details')}" target="_blank" class="wa-cta"><i class="fa-brands fa-whatsapp"></i> Get payment details</a>`,
+            qr: [{ l: '🍛 View Menu', a: 'menu' }, { l: '⟶ Back to Menu', a: 'home' }]
+        },
+        complaints: {
+            text: `<strong>🛡️ Report an Issue</strong><br>
+                Your satisfaction matters. We resolve all complaints within <strong>24 hours</strong>. Contact us directly on WhatsApp for immediate assistance.`,
+            cta: `<a href="${waLink('I have a complaint about my order')}" target="_blank" class="wa-cta"><i class="fa-solid fa-flag"></i> Report Issue</a>`,
+            qr: [{ l: '⟶ Back to Menu', a: 'home' }]
+        },
+        location: {
+            text: `<strong>📍 Our Location</strong><br>
+                <ul>
+                    <li><strong>Address:</strong> Main Boulevard, Ferozepur Road, Lahore</li>
+                    <li><strong>Landmark:</strong> Near City Center Plaza</li>
+                    <li><strong>Parking:</strong> Available</li>
+                </ul>`,
+            cta: `<a href="${MAPS_LINK}" target="_blank" class="map-cta"><i class="fa-solid fa-location-dot"></i> Open in Maps</a>`,
+            qr: [{ l: '🕒 Timings', a: 'timings' }, { l: '⟶ Back to Menu', a: 'home' }]
+        }
+    };
+
+    // ─── Handler ───
+    function handleNav(action, el) {
+        if (el) {
+            el.style.pointerEvents = 'none'; el.style.opacity = '0.5';
+            setTimeout(() => { el.style.pointerEvents = ''; el.style.opacity = ''; }, 800);
+        }
+
+        if (action === 'home') {
+            addUser('⟵ Back to Menu');
+            addBot('What else can I help you with? Tap a category below:', [
+                { l: '🛵 Delivery', a: 'delivery' }, { l: '🍛 Menu', a: 'menu' },
+                { l: '🌶️ Taste', a: 'taste' }, { l: '⭐ Reviews', a: 'reviews' },
+                { l: '🕒 Timings', a: 'timings' }, { l: '💳 Payments', a: 'payments' },
+                { l: '🛡️ Complaints', a: 'complaints' }, { l: '📍 Location', a: 'location' }
+            ], 500);
+            renderNav(mainNav);
+            return;
+        }
+
+        const navItem = mainNav.find(n => n.a === action);
+        addUser(navItem ? navItem.label : action);
+
+        const data = DB[action];
+        if (data) {
+            let html = data.text;
+            if (data.cta) html += `<br>${data.cta}`;
+            addBot(html, data.qr);
+        }
+    }
+
+    // ─── Init ───
+    function initChat() {
+        addBot(
+            `Assalam-o-Alaikum! 👋<br><br>Welcome to <strong>Data-X Kitchen</strong>, Ferozepur Road. Tap any category below to get started!`,
+            [
+                { l: '🛵 Delivery', a: 'delivery' }, { l: '🍛 Menu', a: 'menu' },
+                { l: '🌶️ Taste', a: 'taste' }, { l: '⭐ Reviews', a: 'reviews' },
+                { l: '🕒 Timings', a: 'timings' }, { l: '💳 Payments', a: 'payments' },
+                { l: '🛡️ Complaints', a: 'complaints' }, { l: '📍 Location', a: 'location' }
+            ], 700
+        );
+    }
+
+    function resetChat() {
+        chatBody.querySelectorAll('.m-row').forEach(m => m.remove());
+        renderNav(mainNav);
+        initChat();
+    }
+</script>
